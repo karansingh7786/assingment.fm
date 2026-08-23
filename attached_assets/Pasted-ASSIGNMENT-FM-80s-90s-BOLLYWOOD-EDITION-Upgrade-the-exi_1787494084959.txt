@@ -1,0 +1,604 @@
+ASSIGNMENT FM — 80s & 90s BOLLYWOOD EDITION 🎧
+
+Upgrade the existing Assignment FM website into a nostalgic 80s + 90s Hindi Bollywood music experience.
+
+The concept:
+
+«“Assignments modern hain. Gaane timeless hain.”»
+
+The website should feel like a beautiful retro Bollywood jukebox mixed with a modern premium music app.
+
+DO NOT redesign it into a generic Spotify clone.
+
+Make it feel nostalgic, warm, cinematic and Indian.
+
+---
+
+🎨 VISUAL IDENTITY
+
+Theme:
+
+Retro Bollywood + modern music player
+
+Use:
+
+- Deep burgundy / wine
+- Warm cream
+- Dark charcoal
+- Golden highlights
+- Subtle film-grain texture
+- Vintage poster-inspired artwork
+- Soft gradients
+- Rounded modern cards
+- Slight glassmorphism
+- Elegant serif headings combined with modern sans-serif body text
+
+Add subtle effects:
+
+- Film grain
+- Floating music notes
+- Vinyl/disc animations
+- Soft glow
+- Slow background movement
+- Retro equalizer animation
+
+Avoid excessive animations.
+
+The site should feel premium, not childish.
+
+---
+
+HERO
+
+Main heading:
+
+80s & 90s.
+The Golden Era of Bollywood. 🎶
+
+Subheading:
+
+“Assignments karte karte thoda purane zamaane mein chale jao.”
+
+Small text:
+
+Evergreen melodies for assignments, coding, late-night studying and everything in between.
+
+Primary button:
+
+▶ Start Listening
+
+Secondary:
+
+Explore Golden Hits
+
+Hero artwork:
+
+Create a large vintage Bollywood-inspired music artwork / cassette / vinyl visual.
+
+Add animated cassette or vinyl rotation when music is playing.
+
+Small badge:
+
+NOW PLAYING — GOLDEN ERA RADIO
+
+---
+
+MAIN CATEGORIES
+
+Create beautiful visual category cards.
+
+❤️ Evergreen Romance
+
+For timeless romantic songs.
+
+Songs should include examples such as:
+
+- Pehla Nasha
+- Ek Ladki Ko Dekha
+- Aaye Ho Meri Zindagi Mein
+- Tujhe Dekha To
+- Dheere Dheere Se Meri Zindagi Mein Aana
+- Nazar Ke Saamne
+- Baahon Ke Darmiyan
+- Do Dil Mil Rahe Hain
+- Pardesi Pardesi
+- Mera Dil Bhi Kitna Pagal Hai
+
+---
+
+💔 Dard & Sad Songs
+
+For those “assignment ke saath life bhi difficult hai” moments.
+
+Examples:
+
+- Tadap Tadap
+- Chithi Na Koi Sandes
+- Tu Hi Re
+- Aankhon Se Tune Kya Keh Diya
+- Achha Sila Diya
+- Jeeye To Jeeye Kaise
+- O Saathi Re
+- Dil Ke Armaan
+
+---
+
+💃 Full Bollywood Masti
+
+High-energy classics.
+
+Examples:
+
+- Jumma Chumma De De
+- Ole Ole
+- Chaiyya Chaiyya
+- Tan Tana Tan
+- Urvashi Urvashi
+- Husn Hai Suhana
+- Sona Kitna Sona Hai
+- Chunnari Chunnari
+- Yaar Bina Chain Kahan Re
+
+---
+
+🌙 Late Night Classics
+
+Calm songs for midnight assignments.
+
+Examples:
+
+- Taal Se Taal Mila
+- Tu Hi Re
+- Kuch Kuch Hota Hai
+- Ae Ajnabi
+- Pehla Nasha
+- Ek Ladki Ko Dekha
+- Kehna Hi Kya
+- Do Dil Mil Rahe Hain
+
+---
+
+📚 Study & Assignment Mode
+
+Keep this category more relaxed.
+
+Use:
+
+- Instrumental versions
+- Lo-fi versions
+- Soft Bollywood melodies
+- Piano covers
+- Acoustic covers
+
+Prioritize music that works well in the background.
+
+---
+
+🕺 90s Dance Floor
+
+Examples:
+
+- What Is Mobile Number
+- O O Jaane Jaana
+- Ankhiyon Se Goli Maare
+- Makhna
+- Yai Re Yai Re
+- Ole Ole
+- Tan Tana Tan
+- Chaiyya Chaiyya
+
+---
+
+⭐ GOLDEN ERA PLAYLIST
+
+Create a large featured playlist:
+
+“The Ultimate 80s–90s Bollywood Jukebox”
+
+Include a curated selection of approximately 40–60 songs from the golden era.
+
+Prioritize iconic artists:
+
+- Kumar Sanu
+- Udit Narayan
+- Alka Yagnik
+- Kumar Sanu & Alka Yagnik
+- Asha Bhosle
+- Kishore Kumar
+- Lata Mangeshkar
+- Abhijeet
+- Sonu Nigam
+- Hariharan
+- Kavita Krishnamurti
+- Anuradha Paudwal
+- Sadhana Sargam
+
+Prioritize iconic composers:
+
+- Nadeem–Shravan
+- Anu Malik
+- A.R. Rahman
+- Jatin–Lalit
+- Anand–Milind
+- Rajesh Roshan
+- Bappi Lahiri
+
+---
+
+🎵 SONG DATA
+
+Create a centralized song database such as:
+
+const songs = [
+  {
+    id: "song-001",
+    title: "Pehla Nasha",
+    artist: "Udit Narayan, Sadhana Sargam",
+    movie: "Jo Jeeta Wohi Sikandar",
+    year: 1992,
+    era: "90s",
+    category: "Romance",
+    youtubeId: "REAL_YOUTUBE_VIDEO_ID",
+    thumbnail: "YOUTUBE_THUMBNAIL_URL"
+  }
+]
+
+Do NOT invent fake YouTube IDs.
+
+Use real, publicly available YouTube videos from official/rightsholder channels wherever possible.
+
+Prefer official channels such as:
+
+- Tips Official
+- T-Series
+- Saregama Music
+- Venus
+- Sony Music India
+- Rajshri
+- other legitimate rights-holder channels
+
+For example, Tips Official currently has verified 80s/90s Bollywood compilations containing songs such as “Tera Naam Liya”, “Tere Ishq Mein Naachenge”, “Tu Mera Jaanu Hai”, “Sona Kitna Sona Hai”, “Aaye Ho Meri Zindagi Mein” and others.
+
+---
+
+🔗 YOUTUBE PLAYBACK — VERY IMPORTANT
+
+DO NOT download songs.
+
+DO NOT convert YouTube videos to MP3.
+
+DO NOT use:
+
+new Audio("https://youtube.com/...")
+
+YouTube URLs are not direct audio files.
+
+Implement playback using the YouTube embedded player / IFrame Player API.
+
+The YouTube player should be controlled by the Assignment FM UI.
+
+When user clicks:
+
+▶ Play
+
+the selected YouTube video should play.
+
+The music player should support:
+
+- Play
+- Pause
+- Next
+- Previous
+- Volume
+- Progress
+- Current song
+- Queue
+- Playlist
+- Song switching
+
+The player should NOT be muted by default.
+
+Playback must be triggered by the user's click.
+
+---
+
+🚨 EMBED FALLBACK
+
+Some YouTube videos may not allow embedding.
+
+Detect playback/embed errors.
+
+If a song cannot be embedded, show:
+
+“This song can't be played here.”
+
+Button:
+
+Open on YouTube ↗
+
+Do not break the entire player.
+
+---
+
+🎧 PERSISTENT MUSIC PLAYER
+
+Create a beautiful sticky bottom player.
+
+Desktop:
+
+[Album Art] [Song] [Artist]
+
+Previous | ▶ Play | Next
+
+────────────── progress
+
+Volume | Queue
+
+Mobile:
+
+Compact player:
+
+[Artwork] Song Title     ▶
+
+Clicking it expands into a full-screen player.
+
+---
+
+📻 RADIO MODE
+
+Add a special feature:
+
+GOLDEN ERA RADIO 📻
+
+Button:
+
+Start Radio
+
+When clicked:
+
+Automatically play songs sequentially from the selected category.
+
+Example:
+
+Romance Radio:
+
+Pehla Nasha
+↓
+Ek Ladki Ko Dekha
+↓
+Aaye Ho Meri Zindagi Mein
+↓
+Mera Dil Bhi Kitna Pagal Hai
+↓
+Tujhe Dekha To
+
+Make the transition seamless.
+
+---
+
+🔍 SEARCH
+
+Search across:
+
+- Song name
+- Artist
+- Movie
+- Year
+- Category
+
+Examples:
+
+Search:
+
+“Kumar Sanu”
+
+“1995”
+
+“Romantic”
+
+“Dil”
+
+---
+
+🗓️ ERA FILTER
+
+Add beautiful filter buttons:
+
+ALL
+
+80s
+
+90s
+
+ROMANCE
+
+SAD
+
+DANCE
+
+LATE NIGHT
+
+STUDY
+
+---
+
+🎞️ MOVIE FILTER
+
+Allow browsing by movie.
+
+Example:
+
+Dilwale Dulhania Le Jayenge
+
+1995
+
+Songs:
+
+- Tujhe Dekha To
+- Mere Khwabon Mein
+- Ho Gaya Hai Tujhko To Pyar Sajna
+- Zara Sa Jhoom Loon Main
+
+Similarly include iconic movies from the era.
+
+---
+
+🪩 NOSTALGIA SECTION
+
+Add:
+
+“Remember These?”
+
+Create horizontal cards showing:
+
+📼 Cassette
+
+📻 Radio
+
+💿 Audio CD
+
+🎞️ Bollywood Film Reel
+
+🎧 Walkman
+
+Clicking these can trigger small nostalgic animations.
+
+---
+
+😂 ENGINEERING HUMOUR
+
+Keep Assignment FM's original engineering theme.
+
+Examples:
+
+“DBMS assignment detected. Playing Kumar Sanu.”
+
+“Tomorrow's submission? 90s music recommended.”
+
+“Code not compiling? Try A.R. Rahman.”
+
+“Statistics not making sense? At least the music does.”
+
+“2 AM. Assignment pending. Kumar Sanu playing.”
+
+“Professor said ‘easy assignment’. We know what that means.”
+
+---
+
+🏆 SPECIAL PLAYLISTS
+
+Create:
+
+🕛 2 AM Assignment
+
+“Deadline kal hai. Panic aaj.”
+
+☕ Chai + Kumar Sanu
+
+“Engineering ka unofficial therapy.”
+
+💻 Coding with A.R. Rahman
+
+“Debugging, but cinematic.”
+
+💔 Assignment Break
+
+“5 minute ka break jo 45 minute ho gaya.”
+
+🧑‍💻 CSE Night Shift
+
+“Code + headphones + nostalgia.”
+
+😭 Viva Tomorrow
+
+“Confidence music before destruction.”
+
+---
+
+📱 MOBILE EXPERIENCE
+
+Mobile is the primary target.
+
+Make everything optimized for Android.
+
+- Sticky player
+- Large touch targets
+- Swipeable playlists
+- Horizontal song carousels
+- Bottom navigation
+- Full-screen player
+- Fast loading
+- No unnecessary huge images
+
+---
+
+⚡ PERFORMANCE
+
+- Lazy-load images
+- Don't load every YouTube iframe simultaneously
+- Create the YouTube player only when required
+- Keep one active player instance
+- Avoid unnecessary re-renders
+- Use thumbnails until a song is actually played
+
+---
+
+⚖️ COPYRIGHT / CONTENT RULES
+
+Do NOT host copyrighted MP3 files.
+
+Do NOT scrape/download music.
+
+Do NOT convert YouTube videos into audio files.
+
+Use official YouTube embeds or links to legitimate uploads.
+
+Clearly display:
+
+“Music belongs to the respective artists, labels and rights holders. Assignment FM does not host or distribute music files.”
+
+If embedding is unavailable, provide an Open on YouTube button.
+
+---
+
+FOOTER
+
+Assignment FM
+
+Assignments modern hain.
+Gaane timeless hain. ❤️
+
+Links:
+
+Home
+Golden Hits
+80s
+90s
+Playlists
+About
+
+Footer disclaimer about third-party music platforms and respective rights holders.
+
+---
+
+FINAL PRODUCT FEEL
+
+The final website should feel like:
+
+Old Bollywood Jukebox × Modern Music App × Engineering College Life
+
+It should immediately give the feeling:
+
+«“Bhai ye website assignment karte waqt chalane ke liye bani hai.”»
+
+Make it beautiful enough that students would want to share it on:
+
+Instagram Stories
+WhatsApp
+College groups
+Discord
+College communities
+
+Do NOT make it look like a college project.
+
+Make it look like a real internet product.
