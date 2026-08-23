@@ -1,6 +1,6 @@
-# [Project name]
+# Assignment FM
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Assignment FM is a playful music discovery site for engineering students surviving assignments, coding sessions, and late-night deadlines.
 
 ## Run & Operate
 
@@ -22,15 +22,19 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/assignment-fm/src/App.tsx` — single-page product surface, centralized track/mood/playlist data, and player interactions
+- `artifacts/assignment-fm/src/index.css` — Assignment FM theme, typography, textures, and motion
+- `artifacts/assignment-fm/.replit-artifact/artifact.toml` — root-routed web artifact configuration
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- The first release is frontend-only; music is represented with official YouTube links rather than hosted audio files.
+- Track, mood, and playlist content lives in centralized arrays so the library can grow without changing component structure.
+- The visual language intentionally uses editorial campus-radio energy instead of copying a mainstream streaming service.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+Users can discover playlists and moods, search and filter a song library, select tracks, manage a queue, favorite the current track, open official YouTube sources, and share the experience.
 
 ## User preferences
 
