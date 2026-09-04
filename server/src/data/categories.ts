@@ -1,0 +1,27 @@
+import type { Category } from '@assignment-fm/shared';
+
+export const categories: Category[] = [
+  { id: 'romance', name: 'Love Songs', hindi: 'इश्क़ का मौसम', description: 'For eye contact across the lab and songs that never age.', color: '#d28a73', number: '01' },
+  { id: 'sad', name: 'Dard & Sad Songs', hindi: 'दिल की बात', description: 'When the assignment passed, but your feelings did not.', color: '#9caeaa', number: '02' },
+  { id: 'masti', name: 'Full Bollywood Masti', hindi: 'पूरा धमाल', description: 'Canteen breaks, dramatic entrances, zero regrets.', color: '#e0b84f', number: '03' },
+  { id: 'late-night', name: 'Late Night Classics', hindi: 'रात अभी बाकी है', description: 'The hostel is quiet. The playlist knows better.', color: '#687b9c', number: '04' },
+  { id: 'study', name: 'Study & Assignment Mode', hindi: 'पढ़ाई का साउंडट्रैक', description: 'For code that compiles on the third emotional attempt.', color: '#bd8b58', number: '05' },
+  { id: 'dance', name: '90s Dance Floor', hindi: 'नाचो सारी रात', description: 'A little choreography between two compiler errors.', color: '#b86761', number: '06' },
+  { id: 'bollywood', name: 'Bollywood', hindi: 'सिनेमा का जादू', description: 'Pure Hindi cinema magic across the golden decades.' },
+  { id: '80s', name: '80s', hindi: 'अस्सी का दशक', description: 'Synths, dramatic orchestra, and unforgettable voices.' },
+  { id: '90s', name: '90s', hindi: 'नब्बे का दौर', description: 'Melody kings, cassette decks, and monsoon melodies.' },
+  { id: '2000s', name: '2000s', hindi: 'नया ज़माना', description: 'Y2K college romance and timeless acoustics.' },
+  { id: '2010s', name: '2010s', hindi: 'आधुनिक धुनें', description: 'Sufi rock, modern indie, and acoustic gems.' },
+  { id: '2020s', name: '2020s', hindi: 'आज की आवाज़', description: 'Contemporary discoveries and chill lo-fi moods.' },
+  { id: 'retro-classics', name: 'Retro Classics', hindi: 'सदाबहार नग्मे', description: 'Vintage records that paved the way.' },
+  { id: 'marathi', name: 'Marathi', hindi: 'मराठी गाणी', description: 'Natyasangeet to nostalgic golden cinema.' },
+  { id: 'bhojpuri', name: 'Bhojpuri', hindi: 'भोजपुरी रंग', description: 'Earthy melodies, folk rhythms, and festive energy.' },
+  { id: 'punjabi', name: 'Punjabi', hindi: 'पंजाबी तड़का', description: 'High bass, soulful boliyan, and vibrant beats.' },
+  { id: 'indie', name: 'Indie', hindi: 'स्वतंत्र संगीत', description: 'Non-film gems that defined early 2000s pop.' },
+  { id: 'instrumental', name: 'Instrumental', hindi: 'धुनें और संगीत', description: 'Sitar, flute, violin, and lo-fi renditions.' },
+  { id: 'workout', name: 'Workout', hindi: 'कसरत और जोश', description: 'High BPM desi cardio and gym motivation.' },
+  { id: 'bus-driver', name: 'Bus Driver', hindi: 'रोडवेज स्पेशल', description: 'State transport bus vibes on a rainy highway.' },
+  { id: 'road-trip', name: 'Road Trip', hindi: 'सफरनामा', description: 'Highway drives with friends and volume maxed.' },
+  { id: 'college-vibes', name: 'College Vibes', hindi: 'कैंपस के दिन', description: 'Fest season, canteen gossip, and backbench stories.' },
+  { id: 'rainy-day', name: 'Rainy Day', hindi: 'बरसात का दिन', description: 'Hot chai, wet asphalt, and melancholy melodies.' },
+];

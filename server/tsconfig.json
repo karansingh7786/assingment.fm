@@ -8,10 +8,7 @@
     "strict": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
-    "baseUrl": ".",
-    "paths": {
-      "@assignment-fm/shared": ["../shared/types/index.ts"]
-    }
+    "types": ["node"]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
