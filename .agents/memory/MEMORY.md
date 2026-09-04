@@ -1,0 +1,1 @@
+- [Assignment FM direction](assignment-fm.md) — campus-radio music discovery should feel editorial, warm, witty, and distinct from generic streaming dashboards.
