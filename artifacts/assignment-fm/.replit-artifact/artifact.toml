@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Assignment FM"
+description = "A playful, premium music discovery app for engineering students, with curated study playlists, searchable songs, and a persistent listening player."
+version = "1.0.0"
+id = "artifacts/assignment-fm"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19520
+
+[services.development]
+run = "pnpm --filter @workspace/assignment-fm run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/assignment-fm", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/assignment-fm/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19520"
+BASE_PATH = "/"
