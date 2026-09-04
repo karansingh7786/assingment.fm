@@ -1,0 +1,375 @@
+Assignment FM 🎧
+
+Build a polished, responsive, mobile-first music web app called “Assignment FM” for engineering college students.
+
+Core Idea
+
+Assignment FM is a fun, aesthetic music discovery website where engineering students can play background music while doing assignments, studying, coding, or surviving deadlines.
+
+The website should feel like a real curated music platform, NOT like a generic dashboard.
+
+Tagline:
+
+“Press Play. Start Writing. Survive Engineering.”
+
+Use a youthful engineering-college aesthetic with subtle humor, beautiful typography, smooth animations, rounded cards, and a premium modern feel.
+
+---
+
+HERO SECTION
+
+Large headline:
+
+Assignments never end.
+At least the music can be good. 🎧
+
+Subtext:
+
+“Your soundtrack for assignments, coding sessions, all-nighters and questionable life decisions.”
+
+Primary CTA:
+
+Start Listening →
+
+Secondary CTA:
+
+Explore Playlists
+
+Hero visual:
+
+- Large stylish headphones / music artwork
+- Floating music cards
+- Subtle animated equalizer
+- Ambient background
+- Smooth entrance animations
+
+Add a small playful status:
+
+Currently playing: Deadline Mode 💀
+
+---
+
+MOOD / PLAYLIST CATEGORIES
+
+Create visually attractive category cards:
+
+💻 Coding Mode
+
+“For when the code refuses to work.”
+
+📚 Study Mode
+
+“Focus. No distractions. Hopefully.”
+
+📊 Maths & Statistics
+
+“Because apparently x wants to be found.”
+
+🤖 AI / ML Mode
+
+“Train the model, not your patience.”
+
+🗄️ DBMS Mode
+
+“Normalize everything except your sleep schedule.”
+
+🌙 All-Nighter
+
+“Tomorrow's submission starts tonight.”
+
+💀 Deadline Mode
+
+“Submission in 3 hours. Godspeed.”
+
+☕ Chai & Chill
+
+“Assignment open. Brain loading…”
+
+Each card should have:
+
+- artwork
+- title
+- short description
+- song count
+- Play button
+
+---
+
+FEATURED PLAYLISTS
+
+Section heading:
+
+Made for the Engineering Struggle
+
+Create large playlist cards:
+
+1. Assignment Starter Pack
+   
+   - Chill instrumental / lo-fi
+   - “For pretending you'll finish early.”
+
+2. 2 AM Submission
+   
+   - Deep focus / ambient
+   - “Sleep is optional.”
+
+3. Code & Coffee
+   
+   - Coding music
+   - “Compile. Debug. Repeat.”
+
+4. Deadline.exe
+   
+   - High-energy focus
+   - “System running on caffeine.”
+
+5. Main Character Study
+   
+   - Cinematic / calm
+   - “You are definitely passing this semester.”
+
+---
+
+FEATURED SONGS
+
+Create a horizontal/vertical song-card section.
+
+Each card contains:
+
+- YouTube thumbnail
+- song title
+- artist/channel
+- category
+- duration if available
+- Play button
+- Add to playlist button
+
+Example songs can initially use royalty-free / creator-permitted music and official YouTube embeds.
+
+Do NOT download or host copyrighted MP3 files.
+
+Use YouTube embeds or links to official uploads.
+
+---
+
+MUSIC PLAYER
+
+Create a persistent bottom music player similar to a modern streaming website.
+
+Player should contain:
+
+- thumbnail
+- song title
+- artist
+- play/pause
+- previous
+- next
+- progress bar
+- volume
+- playlist queue
+- minimize/maximize button
+
+On mobile, make it a compact sticky player.
+
+When a song is selected, update the player dynamically.
+
+Use YouTube iframe/embed playback where appropriate.
+
+---
+
+SONG LIBRARY
+
+Create a dedicated section:
+
+“The Assignment Playlist”
+
+Add:
+
+Search
+
+Placeholder:
+
+Search songs, moods or artists...
+
+Filters
+
+- All
+- Coding
+- Study
+- Lo-fi
+- Chill
+- Focus
+- All-Nighter
+- Deadline
+- Motivation
+
+Display songs in clean cards/list format.
+
+Example:
+
+Late Night Coding
+Lo-fi Girl
+"Coding"
+
+Deep Focus
+Creator / Artist
+"Focus"
+
+Deadline Rush
+Creator / Artist
+"Deadline"
+
+Make the library easy to expand through a centralized song data structure.
+
+---
+
+FUN ENGINEERING MICROCOPY
+
+Use small jokes throughout the UI:
+
+“Loading motivation…”
+
+“Assignment detected. Playing survival mode.”
+
+“Your professor won't know you listened to lo-fi.”
+
+“Compilation successful. Life isn't.”
+
+“Estimated productivity: questionable.”
+
+“Deadline approaching…”
+
+“Brain.exe has stopped responding.”
+
+Keep these subtle and tasteful.
+
+---
+
+DESIGN
+
+Visual direction:
+
+- Dark premium music-app aesthetic
+- Black / charcoal base
+- Soft gradients
+- White typography
+- One vibrant accent color
+- Glassmorphism used lightly
+- Large rounded cards
+- Beautiful album artwork
+- Smooth hover animations
+- Subtle shadows
+- Modern sans-serif typography
+
+Do NOT make it look like Spotify's exact UI.
+
+It should have its own identity.
+
+Use a warm student/college vibe rather than corporate SaaS styling.
+
+---
+
+RESPONSIVENESS
+
+The site must work beautifully on:
+
+- Android phones
+- iPhones
+- tablets
+- laptops
+- desktop
+
+Mobile experience is extremely important because most students will access it from phones.
+
+---
+
+NAVIGATION
+
+Desktop:
+
+Logo: Assignment FM
+
+Links:
+
+Home
+Playlists
+Songs
+Moods
+About
+
+Right side:
+
+Search icon
+Player icon
+
+Mobile:
+
+Hamburger menu
+Logo
+Search
+
+---
+
+ABOUT SECTION
+
+Title:
+
+Built for the students who said “I'll start tomorrow.”
+
+Text:
+
+“Assignment FM is a tiny internet corner for engineering students who need something playing in the background while surviving assignments, practicals, coding sessions, exams and late-night submissions.”
+
+---
+
+FOOTER
+
+Assignment FM 🎧
+
+Press Play. Start Writing. Survive Engineering.
+
+Links:
+
+Playlists · Songs · About · GitHub
+
+Small disclaimer:
+
+“Music is streamed through third-party platforms such as YouTube. Rights belong to their respective artists, creators and labels.”
+
+---
+
+TECHNICAL REQUIREMENTS
+
+Use:
+
+- React
+- Vite
+- Tailwind CSS
+- shadcn/ui where useful
+- Lucide icons
+- Responsive design
+- Component-based architecture
+
+Create reusable components:
+
+- Navbar
+- Hero
+- MoodCard
+- PlaylistCard
+- SongCard
+- SongLibrary
+- MusicPlayer
+- SearchBar
+- CategoryFilter
+- Footer
+
+Keep song/playlist information in structured JavaScript data so songs can easily be added later.
+
+Avoid unnecessary backend/database complexity for the first MVP.
+
+The first version should be a beautiful, fast, fully functional frontend.
+
+Focus heavily on:
+UI polish + music interaction + mobile experience + shareability.
+
+Make animations subtle, smooth and premium.
