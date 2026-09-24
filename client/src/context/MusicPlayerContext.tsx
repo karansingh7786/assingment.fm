@@ -1,7 +1,10 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { Song } from '@assignment-fm/shared';
 import type { PlaybackProvider } from '../services/playback/PlaybackProvider';
-import { MockPlaybackProvider } from '../services/playback/MockPlaybackProvider';
+import { defaultPlaybackProvider } from '../services/playback/YouTubeIframePlaybackProvider';
+import { youtubeService } from '../services/youtubeService';
+import { createRadioFromMood } from '../services/radioEngine';
+import { bollywoodTracks } from '../data/bollywood';
 
 export interface MusicPlayerContextType {
   currentSong: Song | null;
@@ -14,16 +17,20 @@ export interface MusicPlayerContextType {
   volume: number; // 0 to 1
   isMuted: boolean;
   loading: boolean;
+  isLoading: boolean; // alias
   error: string | null;
   selectedMood: string | null;
   radioName: string;
   favorites: string[];
   isExpanded: boolean;
   notice: string;
+  isAutoplayBlocked: boolean;
 
   // Actions
   play: (song?: Song, newQueue?: Song[]) => void;
+  playSong: (song: Song) => void;
   pause: () => void;
+  togglePlay: () => void;
   togglePlayPause: () => void;
   next: () => void;
   previous: () => void;
@@ -31,27 +38,33 @@ export interface MusicPlayerContextType {
   setVolume: (volume: number) => void;
   toggleMute: () => void;
   setQueue: (queue: Song[]) => void;
-  selectMood: (mood: string | null) => void;
+  clearQueue: () => void;
+  selectMood: (mood: string | null, songPool?: Song[]) => void;
   startRadio: (songs: Song[], label?: string) => void;
   toggleFavorite: (songId: string) => void;
   setIsExpanded: (expanded: boolean) => void;
   showNotice: (message: string) => void;
+  dismissAutoplayBanner: () => void;
 }
 
 const MusicPlayerContext = createContext<MusicPlayerContextType | undefined>(undefined);
 
 export function MusicPlayerProvider({
   children,
-  initialSongs = [],
+  initialSongs,
   provider,
 }: {
   children: ReactNode;
   initialSongs?: Song[];
   provider?: PlaybackProvider;
 }) {
-  const playbackProviderRef = useRef<PlaybackProvider>(provider || new MockPlaybackProvider());
-  const [currentSong, setCurrentSong] = useState<Song | null>(initialSongs[0] || null);
-  const [queue, setQueue] = useState<Song[]>(initialSongs);
+  const fallbackSongs = (initialSongs && initialSongs.length > 0)
+    ? initialSongs
+    : (bollywoodTracks as unknown as Song[]);
+
+  const playbackProviderRef = useRef<PlaybackProvider>(provider || defaultPlaybackProvider);
+  const [currentSong, setCurrentSong] = useState<Song | null>(fallbackSongs[0] || null);
+  const [queue, setQueueState] = useState<Song[]>(fallbackSongs);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(180);
@@ -64,13 +77,16 @@ export function MusicPlayerProvider({
   const [favorites, setFavorites] = useState<string[]>([]);
   const [isExpanded, setIsExpanded] = useState(false);
   const [notice, setNotice] = useState('');
+  const [isAutoplayBlocked, setIsAutoplayBlocked] = useState(false);
   const noticeTimerRef = useRef<number | null>(null);
+  const nextRef = useRef<() => void>(() => {});
+  const showNoticeRef = useRef<(msg: string) => void>(() => {});
 
   // Update current song if initialSongs arrives later
   useEffect(() => {
-    if (!currentSong && initialSongs.length > 0) {
+    if (!currentSong && initialSongs && initialSongs.length > 0) {
       setCurrentSong(initialSongs[0]);
-      setQueue(initialSongs);
+      setQueueState(initialSongs);
     }
   }, [initialSongs, currentSong]);
 
@@ -92,63 +108,115 @@ export function MusicPlayerProvider({
     noticeTimerRef.current = window.setTimeout(() => {
       setNotice('');
       noticeTimerRef.current = null;
-    }, 2600);
+    }, 2800);
   };
+  showNoticeRef.current = showNotice;
 
-  // Bind playback provider events
+  // Bind playback provider events once on mount to prevent tearing YT.Player
   useEffect(() => {
     const p = playbackProviderRef.current;
 
-    const onPlay = () => setIsPlaying(true);
+    const onPlay = () => {
+      setIsPlaying(true);
+      setLoading(false);
+      setIsAutoplayBlocked(false);
+    };
     const onPause = () => setIsPlaying(false);
+    const onLoadStart = () => setLoading(true);
     const onTimeUpdate = (data: unknown) => {
       const { currentTime: ct, duration: d } = data as { currentTime: number; duration: number };
       setCurrentTime(ct);
-      if (d) setDuration(d);
+      if (d && d > 0) setDuration(d);
     };
     const onEnded = () => {
-      next();
+      nextRef.current();
     };
     const onError = (err: unknown) => {
-      setError(String(err));
+      const errorObj = err as any;
+      const errorMsg = errorObj?.message || String(err);
+      setError(errorMsg);
+      setLoading(false);
       setIsPlaying(false);
+
+      // STEP 1 & 12: DO NOT automatically call next() on YouTube error!
+      // Keep the current song selected and show error notice.
+      if (errorObj?.isEmbedRestricted) {
+        showNoticeRef.current('Track restricted from embedding.');
+      } else if (errorObj?.code === 100 || errorObj?.isUnavailable) {
+        showNoticeRef.current('Track unavailable on YouTube.');
+      } else {
+        showNoticeRef.current(`Playback error: ${errorMsg}`);
+      }
     };
 
     p.on('play', onPlay);
     p.on('pause', onPause);
+    p.on('loadstart', onLoadStart);
     p.on('timeupdate', onTimeUpdate);
     p.on('ended', onEnded);
     p.on('error', onError);
 
     return () => {
-      p.destroy();
+      p.off('play', onPlay);
+      p.off('pause', onPause);
+      p.off('loadstart', onLoadStart);
+      p.off('timeupdate', onTimeUpdate);
+      p.off('ended', onEnded);
+      p.off('error', onError);
     };
-  }, [queue, currentSong]);
+  }, []);
 
   const play = (song?: Song, newQueue?: Song[]) => {
     const targetSong = song || currentSong || queue[0];
     if (!targetSong) return;
 
+    const activeQueue = newQueue && newQueue.length > 0 ? newQueue : queue.length === 0 ? [targetSong] : queue;
     if (newQueue && newQueue.length > 0) {
-      setQueue(newQueue);
+      setQueueState(newQueue);
     } else if (queue.length === 0) {
-      setQueue([targetSong]);
+      setQueueState([targetSong]);
     }
 
     setCurrentSong(targetSong);
     setLoading(true);
     setError(null);
+
+    // Pre-resolve upcoming 2 songs in background without blocking current playback
+    const idx = activeQueue.findIndex((s) => s.id === targetSong.id);
+    if (idx !== -1) {
+      youtubeService.preResolveUpcoming(activeQueue, idx, 2).catch(() => {});
+    }
+
     playbackProviderRef.current
       .play(targetSong)
       .then(() => {
-        setIsPlaying(true);
+        // Real playback state is set when YouTube actually fires onPlay
         setLoading(false);
-        showNotice(`Now playing “${targetSong.title}” — YouTube link ready`);
+        setIsAutoplayBlocked(false);
+        showNotice(`Now playing “${targetSong.title}”`);
       })
       .catch((err) => {
-        setError(err.message);
+        // Check for browser autoplay policy rejections
+        const errorMsg = String(err?.message || err);
+        if (
+          errorMsg.includes('NotAllowedError') ||
+          errorMsg.includes('autoplay') ||
+          errorMsg.includes('user gesture')
+        ) {
+          setIsAutoplayBlocked(true);
+          showNotice('Browser paused playback. Tap to play!');
+        } else {
+          setError(errorMsg);
+          showNotice(`“${targetSong.title}” unavailable.`);
+          // STEP 1 & 12: DO NOT automatically skip! Keep current track selected.
+        }
         setLoading(false);
+        setIsPlaying(false);
       });
+  };
+
+  const playSong = (song: Song) => {
+    play(song);
   };
 
   const pause = () => {
@@ -161,8 +229,9 @@ export function MusicPlayerProvider({
       pause();
     } else {
       if (currentSong) {
-        playbackProviderRef.current.resume();
-        setIsPlaying(true);
+        // STEP 6: Call play() with user gesture, wait for YouTube onPlay event
+        play(currentSong);
+        setIsAutoplayBlocked(false);
       } else if (queue.length > 0) {
         play(queue[0]);
       }
@@ -170,15 +239,16 @@ export function MusicPlayerProvider({
   };
 
   const next = () => {
-    const activeQueue = queue.length > 0 ? queue : initialSongs;
+    const activeQueue = queue.length > 0 ? queue : fallbackSongs;
     if (activeQueue.length === 0) return;
     const currentIdx = activeQueue.findIndex((s) => s.id === currentSong?.id);
     const nextIdx = (currentIdx + 1) % activeQueue.length;
     play(activeQueue[nextIdx], activeQueue);
   };
+  nextRef.current = next;
 
   const previous = () => {
-    const activeQueue = queue.length > 0 ? queue : initialSongs;
+    const activeQueue = queue.length > 0 ? queue : fallbackSongs;
     if (activeQueue.length === 0) return;
     const currentIdx = activeQueue.findIndex((s) => s.id === currentSong?.id);
     const prevIdx = (currentIdx - 1 + activeQueue.length) % activeQueue.length;
@@ -208,16 +278,57 @@ export function MusicPlayerProvider({
     } else {
       setIsMuted(true);
       playbackProviderRef.current.setVolume(0);
-      showNotice('Playback muted in this preview');
+      showNotice('Playback muted');
+    }
+  };
+
+  const setQueue = (newQueue: Song[]) => {
+    setQueueState(newQueue);
+  };
+
+  const clearQueue = () => {
+    setQueueState([]);
+  };
+
+  const selectMood = (mood: string | null, songPool?: Song[]) => {
+    setSelectedMood(mood);
+    if (!mood) return;
+
+    const pool = songPool && songPool.length > 0 ? songPool : queue.length > 0 ? queue : fallbackSongs;
+    const radioQueue = createRadioFromMood(mood, pool, currentSong?.id);
+    const capitalized = mood.charAt(0).toUpperCase() + mood.slice(1);
+    setRadioName(`${capitalized} Radio`);
+
+    if (radioQueue.length > 0) {
+      setQueueState(radioQueue);
+      const firstSong = radioQueue[0];
+      setCurrentSong(firstSong);
+      setError(null);
+      setLoading(false);
+
+      // STEP 7: Cue track instead of calling play() from mood selection effect
+      if (typeof (playbackProviderRef.current as any).cue === 'function') {
+        (playbackProviderRef.current as any).cue(firstSong).catch(() => {});
+      }
+
+      showNotice(`Tuned into ${capitalized} Radio (${radioQueue.length} tracks). Tap Play to listen!`);
     }
   };
 
   const startRadio = (radioSongs: Song[], label = 'All India Hostel Radio') => {
     if (radioSongs.length === 0) return;
     setRadioName(label);
-    setQueue(radioSongs);
-    play(radioSongs[0], radioSongs);
-    document.getElementById('player')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    setQueueState(radioSongs);
+    const firstSong = radioSongs[0];
+    setCurrentSong(firstSong);
+    setError(null);
+    setLoading(false);
+
+    if (typeof (playbackProviderRef.current as any).cue === 'function') {
+      (playbackProviderRef.current as any).cue(firstSong).catch(() => {});
+    }
+
+    showNotice(`Tuned into ${label}. Tap Play to listen!`);
   };
 
   const toggleFavorite = (songId: string) => {
@@ -229,8 +340,8 @@ export function MusicPlayerProvider({
     });
   };
 
-  const selectMood = (mood: string | null) => {
-    setSelectedMood(mood);
+  const dismissAutoplayBanner = () => {
+    setIsAutoplayBlocked(false);
   };
 
   return (
@@ -246,14 +357,18 @@ export function MusicPlayerProvider({
         volume,
         isMuted,
         loading,
+        isLoading: loading,
         error,
         selectedMood,
         radioName,
         favorites,
         isExpanded,
         notice,
+        isAutoplayBlocked,
         play,
+        playSong,
         pause,
+        togglePlay: togglePlayPause,
         togglePlayPause,
         next,
         previous,
@@ -261,11 +376,13 @@ export function MusicPlayerProvider({
         setVolume,
         toggleMute,
         setQueue,
+        clearQueue,
         selectMood,
         startRadio,
         toggleFavorite,
         setIsExpanded,
         showNotice,
+        dismissAutoplayBanner,
       }}
     >
       {children}

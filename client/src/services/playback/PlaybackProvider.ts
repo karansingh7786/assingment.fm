@@ -7,12 +7,15 @@ export type PlaybackEventType =
   | 'timeupdate'
   | 'volumechange'
   | 'error'
-  | 'loadstart';
+  | 'loadstart'
+  | 'buffering'
+  | 'ready';
 
 export type PlaybackEventListener = (data?: unknown) => void;
 
 export interface PlaybackProvider {
   play(song: Song): Promise<void>;
+  cue?(song: Song): Promise<void>;
   pause(): void;
   resume(): Promise<void>;
   seek(timeInSeconds: number): void;

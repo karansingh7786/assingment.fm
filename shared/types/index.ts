@@ -4,15 +4,18 @@ export interface Song {
   id: string;
   title: string;
   artist: string;
-  movie: string; // album / film name
-  year: number;
-  era: Era;
+  album?: string;
+  movie?: string; // album / film name (legacy/alias)
+  year?: number;
+  era?: Era | string;
   moods: string[]; // e.g. ['Romantic', 'Nostalgic', 'Late Night']
   categories: string[]; // e.g. ['Bollywood', '90s', 'Love Songs']
-  duration: string; // e.g. '4:47'
-  label: string; // e.g. 'first crush protocol'
-  cover: string; // CSS gradient or image URL
-  youtubeUrl: string; // Official YouTube search or watch link
+  duration?: string | number; // e.g. '4:47' or 287
+  label?: string; // e.g. 'first crush protocol'
+  cover?: string; // CSS gradient or image URL
+  thumbnail?: string; // image thumbnail
+  youtubeUrl?: string; // Official YouTube search or watch link
+  youtubeVideoId?: string; // YouTube Video ID for IFrame player
   language: string; // e.g. 'Hindi'
 }
 
@@ -44,4 +47,16 @@ export interface Playlist {
 
 export interface ApiErrorResponse {
   error: string;
+}
+
+export interface YouTubeSearchItem {
+  videoId: string;
+  title: string;
+  channelTitle: string;
+  thumbnail: string;
+  publishedAt: string;
+}
+
+export interface YouTubeSearchResponse {
+  items: YouTubeSearchItem[];
 }

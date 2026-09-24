@@ -5,6 +5,7 @@ import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { MusicPlayerProvider } from '@/context/MusicPlayerContext';
+import { YouTubePlayerHost } from '@/components/player/YouTubePlayerHost';
 import { Home } from '@/pages/Home';
 import NotFound from '@/pages/not-found';
 
@@ -31,6 +32,7 @@ export function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <MusicPlayerProvider>
+          <YouTubePlayerHost />
           <WouterRouter base="">
             <ErrorBoundary>
               <Router />

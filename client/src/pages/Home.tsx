@@ -1,14 +1,14 @@
 import React, { useMemo, useState } from 'react';
 import {
   ArrowDownRight,
-  ArrowUpRight,
   Disc3,
   ExternalLink,
   Play,
   Radio,
   Search,
+  Sparkles,
 } from 'lucide-react';
-import type { Song, Category } from '@assignment-fm/shared';
+import type { Song, Category, Playlist } from '@assignment-fm/shared';
 import { useMusicPlayer } from '../hooks/useMusicPlayer';
 import { useSongs } from '../hooks/useSongs';
 import { useCategories } from '../hooks/useCategories';
@@ -19,12 +19,28 @@ import { SectionKicker } from '../components/layout/SectionKicker';
 import { Cassette } from '../components/player/Cassette';
 import { Poster } from '../components/player/Poster';
 import { TrackRow } from '../components/track/TrackRow';
-import { CategoryCard } from '../components/categories/CategoryCard';
 import { BottomPlayer } from '../components/player/BottomPlayer';
 import { ExpandedPlayer } from '../components/player/ExpandedPlayer';
+import { MoodSection } from '../components/home/MoodSection';
+import { DiscoverySection } from '../components/home/DiscoverySection';
+import { GenresSection } from '../components/home/GenresSection';
+import { ErasSection } from '../components/home/ErasSection';
+import { PlaylistsSection } from '../components/home/PlaylistsSection';
+import { AboutSection } from '../components/home/AboutSection';
 import { bollywoodTracks, categories as defaultCategories, playlists as defaultPlaylists } from '../data/bollywood';
 
-const allFilters = ['all', '80s', '90s', 'romance', 'sad', 'dance', 'late night', 'study'] as const;
+const allFilters = [
+  'all',
+  '80s',
+  '90s',
+  '2000s',
+  'romance',
+  'sad',
+  'masti',
+  'late night',
+  'focus',
+  'regional',
+] as const;
 type Filter = typeof allFilters[number];
 
 export function Home() {
@@ -48,26 +64,10 @@ export function Home() {
     return apiSongs.length > 0 ? apiSongs : (bollywoodTracks as unknown as Song[]);
   }, [apiSongs]);
 
-  const categories = useMemo(() => {
-    return apiCategories.length > 0
-      ? apiCategories
-      : (defaultCategories.map((c) => ({
-          id: c.key,
-          name: c.title,
-          hindi: c.hindi,
-          description: c.description,
-          color: c.color,
-          number: c.number,
-        })) as Category[]);
-  }, [apiCategories]);
-
   const playlists = useMemo(() => {
     return apiPlaylists.length > 0
       ? apiPlaylists
-      : defaultPlaylists.map((p) => ({
-          ...p,
-          songIds: p.trackIds,
-        }));
+      : (defaultPlaylists as unknown as Playlist[]);
   }, [apiPlaylists]);
 
   const [activeFilter, setActiveFilter] = useState<Filter>('all');
@@ -75,64 +75,67 @@ export function Home() {
   const [movieFilter, setMovieFilter] = useState('');
 
   const movies = useMemo(() => {
-    return Array.from(new Set(songs.map((track) => track.movie))).slice(0, 8);
+    return Array.from(new Set(songs.map((track) => track.movie || track.album || ''))).filter(Boolean).slice(0, 8);
   }, [songs]);
-
-  const selectedCategory =
-    activeFilter === 'all' || activeFilter === '80s' || activeFilter === '90s'
-      ? null
-      : activeFilter === 'late night'
-      ? 'late-night'
-      : activeFilter;
 
   const filteredTracks = useMemo(() => {
     return songs.filter((track) => {
       const query = search.trim().toLowerCase();
-      const categoriesList: string[] = Array.isArray(track.categories)
-        ? track.categories
-        : (track as unknown as { category?: string }).category
-        ? [(track as unknown as { category: string }).category]
-        : [];
-      const searchable = `${track.title || ''} ${track.artist || ''} ${track.movie || ''} ${track.year || ''} ${track.era || ''} ${categoriesList.join(' ')} ${track.label || ''}`.toLowerCase();
+      const categoriesList: string[] = Array.isArray(track.categories) ? track.categories : [];
+      const moodsList: string[] = Array.isArray(track.moods) ? track.moods : [];
+      const movieOrAlbum = track.movie || track.album || '';
+
+      const searchable = [
+        track.title || '',
+        track.artist || '',
+        movieOrAlbum,
+        track.year || '',
+        track.era || '',
+        track.language || '',
+        ...categoriesList,
+        ...moodsList,
+        track.label || '',
+      ]
+        .join(' ')
+        .toLowerCase();
+
       const matchesQuery = !query || searchable.includes(query);
-      const matchesFilter =
-        activeFilter === 'all' ||
-        activeFilter === track.era ||
-        categoriesList.some((c) => c.toLowerCase() === activeFilter.toLowerCase()) ||
-        (activeFilter === 'late night' && categoriesList.some((c) => c.toLowerCase() === 'late-night'));
-      const matchesMovie = !movieFilter || track.movie === movieFilter;
+
+      let matchesFilter = activeFilter === 'all';
+      if (!matchesFilter) {
+        if (activeFilter === '80s' || activeFilter === '90s' || activeFilter === '2000s') {
+          matchesFilter = track.era === activeFilter;
+        } else if (activeFilter === 'late night') {
+          matchesFilter =
+            categoriesList.some((c) => c.toLowerCase().includes('late-night')) ||
+            moodsList.some((m) => m.toLowerCase().includes('late night'));
+        } else if (activeFilter === 'regional') {
+          matchesFilter = ['Marathi', 'Punjabi', 'Bhojpuri', 'Indie', 'Instrumental'].some(
+            (lang) =>
+              (track.language || '').toLowerCase().includes(lang.toLowerCase()) ||
+              categoriesList.some((c) => c.toLowerCase().includes(lang.toLowerCase()))
+          );
+        } else {
+          matchesFilter =
+            categoriesList.some((c) => c.toLowerCase().includes(activeFilter)) ||
+            moodsList.some((m) => m.toLowerCase().includes(activeFilter));
+        }
+      }
+
+      const matchesMovie = !movieFilter || movieOrAlbum === movieFilter;
       return matchesQuery && matchesFilter && matchesMovie;
     });
   }, [activeFilter, movieFilter, search, songs]);
 
   const scrollTo = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
-  const handleStartCategoryRadio = (categoryId?: string) => {
-    const radioTracks = categoryId
-      ? songs.filter((track) => {
-          const categoriesList: string[] = Array.isArray(track.categories)
-            ? track.categories
-            : (track as unknown as { category?: string }).category
-            ? [(track as unknown as { category: string }).category]
-            : [];
-          return categoriesList.some((c) => c.toLowerCase() === categoryId.toLowerCase());
-        })
-      : songs;
-    const catObj = categories.find((item) => item.id === categoryId);
-    const label = catObj ? catObj.name : 'All India Hostel Radio';
-    startRadio(radioTracks.length > 0 ? radioTracks : songs, label);
-  };
-
-  const handleStartPlaylistRadio = (playlistId: string) => {
-    const targetPlaylist = playlists.find((p) => p.id === playlistId);
-    if (!targetPlaylist) return;
-    const plTracks = targetPlaylist.songIds
-      .map((id) => songs.find((t) => t.id === id))
-      .filter((t): t is Song => Boolean(t));
-    const tracksToPlay = plTracks.length > 0 ? plTracks : songs;
-    startRadio(tracksToPlay, targetPlaylist.title);
+  const handleStartBroadcast = (label = 'Golden Era Radio') => {
+    startRadio(songs, label);
   };
 
   const activeSong = currentSong || songs[0];
@@ -140,47 +143,58 @@ export function Home() {
   return (
     <div className="min-h-[100dvh] overflow-x-hidden pb-28">
       <div className="grain" />
-      <Header onTuneIn={() => handleStartCategoryRadio()} onNavigate={scrollTo} />
+      <Header onTuneIn={() => handleStartBroadcast('Golden Era Live')} onNavigate={scrollTo} />
 
       <main id="top">
-        {/* HERO SECTION */}
+        {/* ========================================================================= */}
+        {/* 1. HERO SECTION                                                           */}
+        {/* ========================================================================= */}
         <section
           id="discover"
-          className="mx-auto max-w-[1320px] px-5 pb-16 pt-14 sm:px-8 sm:pb-24 sm:pt-20 lg:px-12 lg:pt-24"
+          className="mx-auto max-w-[1360px] px-5 pb-16 pt-12 sm:px-8 sm:pb-24 sm:pt-20 lg:px-12 lg:pt-24"
         >
-          <div className="grid items-center gap-14 lg:grid-cols-[1.06fr_.94fr]">
+          <div className="grid items-center gap-14 lg:grid-cols-[1.08fr_.92fr]">
             <div className="reveal">
               <SectionKicker>assignment fm presents / side A</SectionKicker>
+
+              {/* Exact required headline from user prompt */}
               <h1
                 data-testid="text-hero-heading"
-                className="mt-5 max-w-[760px] font-display text-[clamp(3.5rem,8.5vw,8rem)] font-semibold leading-[.83] tracking-[-.09em]"
+                className="mt-5 max-w-[780px] font-display text-[clamp(3.5rem,8.2vw,7.6rem)] font-semibold leading-[.84] tracking-[-.08em]"
               >
-                Assignments<br />
-                <span className="text-[hsl(var(--primary))]">modern hain.</span><br />
-                Gaane timeless hain.
+                Music for<br />
+                <span className="text-[hsl(var(--primary))]">every mood.</span>
               </h1>
-              <p className="mt-8 max-w-[570px] text-lg leading-relaxed text-[hsl(var(--muted-foreground))] sm:text-xl">
-                Assignments karte karte thoda purane zamaane mein chale jao. A warm Hindi Bollywood
-                jukebox for hostel nights, practical files, and the group project that is definitely not
-                going to finish itself.
+
+              {/* Exact supporting text from prompt */}
+              <p className="mt-7 max-w-[560px] text-lg leading-relaxed text-[hsl(var(--muted-foreground))] sm:text-xl">
+                Pick a feeling. We’ll pick the music.
               </p>
-              <div className="mt-8 flex flex-wrap gap-3">
+              <p className="mt-2 max-w-[560px] text-sm leading-relaxed text-[hsl(var(--muted-foreground))]/80">
+                A warm, analog Hindi & regional jukebox tuned for hostel nights, practical files,
+                and deadlines that refuse to finish themselves.
+              </p>
+
+              {/* Exact CTAs from user prompt */}
+              <div className="mt-9 flex flex-wrap gap-3.5">
                 <button
                   data-testid="button-hero-radio"
-                  onClick={() => handleStartCategoryRadio()}
-                  className="rounded-full bg-[hsl(var(--primary))] px-6 py-3.5 text-sm font-bold text-[hsl(var(--background))] shadow-ink transition-transform hover:-translate-y-1 cursor-pointer"
+                  onClick={() => scrollTo('moods')}
+                  className="rounded-full bg-[hsl(var(--primary))] px-7 py-4 text-sm font-bold text-[hsl(var(--background))] shadow-ink transition-transform hover:-translate-y-1 cursor-pointer"
                 >
-                  <Radio size={16} className="mr-2 inline" /> Golden Era Radio
+                  <Sparkles size={16} className="mr-2 inline" /> Choose Your Mood
                 </button>
                 <button
                   data-testid="button-hero-browse"
-                  onClick={() => scrollTo('library')}
-                  className="rounded-full border-2 border-[hsl(var(--foreground))] px-6 py-3.5 text-sm font-bold transition-colors hover:bg-[hsl(var(--foreground))] hover:text-[hsl(var(--background))] cursor-pointer"
+                  onClick={() => handleStartBroadcast('Golden Era Radio')}
+                  className="rounded-full border-2 border-[hsl(var(--foreground))] bg-[hsl(var(--background))] px-7 py-4 text-sm font-bold transition-transform hover:-translate-y-1 hover:bg-[hsl(var(--foreground))] hover:text-[hsl(var(--background))] cursor-pointer shadow-sm"
                 >
-                  Browse the jukebox <ArrowDownRight size={15} className="ml-1 inline" />
+                  <Radio size={15} className="mr-2 inline" /> Explore Radio
                 </button>
               </div>
-              <div className="mt-10 flex items-center gap-3 font-mono-custom text-[10px] uppercase tracking-[.13em] text-[hsl(var(--muted-foreground))]">
+
+              {/* Student counter banner */}
+              <div className="mt-10 flex items-center gap-3 font-mono-custom text-[10px] uppercase tracking-[.14em] text-[hsl(var(--muted-foreground))]">
                 <span className="flex -space-x-2">
                   {['RS', 'AM', 'NK', 'PJ'].map((initials, index) => (
                     <span
@@ -200,39 +214,43 @@ export function Home() {
               </div>
             </div>
 
+            {/* VINTAGE CASSETTE DECK CARD */}
             <div className="relative reveal delay-2">
-              <div className="relative mx-auto max-w-[510px] rotate-[2deg] rounded-[2.4rem] border-2 border-[hsl(var(--foreground))] bg-[#6b3942] p-5 shadow-ink sm:p-8">
-                <div className="absolute -right-3 -top-4 rotate-[7deg] rounded-full border-2 border-[hsl(var(--foreground))] bg-[hsl(var(--secondary))] px-3 py-2 font-mono-custom text-[9px] font-bold uppercase tracking-[.12em] shadow-[3px_3px_0_hsl(var(--foreground))]">
-                  side A / focus
+              <div className="relative mx-auto max-w-[500px] rotate-[2deg] rounded-[2.4rem] border-2 border-[hsl(var(--foreground))] bg-[#6b3942] p-5 shadow-ink sm:p-8">
+                <div className="absolute -right-3 -top-4 rotate-[7deg] rounded-full border-2 border-[hsl(var(--foreground))] bg-[hsl(var(--secondary))] px-3.5 py-1.5 font-mono-custom text-[9px] font-bold uppercase tracking-[.14em] shadow-[3px_3px_0_hsl(var(--foreground))]">
+                  side A / on air
                 </div>
-                <div className="rounded-[1.65rem] border border-[hsl(var(--background))]/20 bg-[hsl(var(--background))]/[.08] p-5 sm:p-7">
+
+                <div className="rounded-[1.75rem] border border-[hsl(var(--background))]/20 bg-[hsl(var(--background))]/[.08] p-5 sm:p-7">
                   <div className="flex items-start justify-between text-[hsl(var(--background))]">
                     <div>
-                      <p className="font-mono-custom text-[9px] uppercase tracking-[.2em] opacity-60">
-                        assignment fm
+                      <p className="font-mono-custom text-[9px] uppercase tracking-[.2em] opacity-65">
+                        assignment fm broadcast
                       </p>
                       <p className="mt-2 font-display text-3xl font-semibold leading-[.9] sm:text-4xl">
                         Late night<br />department
                       </p>
                     </div>
-                    <Disc3 size={28} className="animate-[spin_9s_linear_infinite] opacity-75" />
+                    <Disc3 size={28} className="animate-[spin_8s_linear_infinite] opacity-75" />
                   </div>
-                  <div className="flex justify-center py-9">
+
+                  <div className="flex justify-center py-8">
                     <Cassette />
                   </div>
+
                   <div className="flex items-end justify-between text-[hsl(var(--background))]">
-                    <div>
-                      <p className="font-mono-custom text-[9px] uppercase tracking-[.17em] opacity-60">
+                    <div className="min-w-0 flex-1 pr-4">
+                      <p className="font-mono-custom text-[9px] uppercase tracking-[.18em] opacity-65">
                         now playing
                       </p>
-                      <p data-testid="text-hero-current" className="mt-2 text-sm font-bold">
+                      <p data-testid="text-hero-current" className="mt-1.5 truncate text-base font-bold">
                         {activeSong ? activeSong.title : 'Pehla Nasha'}
                       </p>
-                      <p className="text-xs opacity-60">
-                        {activeSong ? activeSong.artist : 'Udit Narayan'}
+                      <p className="truncate text-xs opacity-75">
+                        {activeSong ? activeSong.artist : 'Udit Narayan'} · {activeSong?.year || '1992'}
                       </p>
                     </div>
-                    <div className="flex items-end gap-1">
+                    <div className="flex items-end gap-1 shrink-0">
                       {[13, 24, 18, 32, 21, 38, 17, 29, 14, 26].map((height, index) => (
                         <span
                           key={index}
@@ -246,7 +264,9 @@ export function Home() {
                   </div>
                 </div>
               </div>
-              <div className="absolute -bottom-9 -left-3 hidden rotate-[-8deg] sm:block">
+
+              {/* Decorative mini cassette badge */}
+              <div className="absolute -bottom-7 -left-4 hidden rotate-[-8deg] sm:block">
                 <Cassette compact />
               </div>
             </div>
@@ -255,153 +275,52 @@ export function Home() {
           <div className="mt-16 flex items-center gap-4 border-t border-[hsl(var(--foreground))]/15 pt-5 font-mono-custom text-[9px] uppercase tracking-[.15em] text-[hsl(var(--muted-foreground))]">
             <span>curated for</span>
             <span className="h-px w-9 bg-[hsl(var(--foreground))]/25" />
-            <span>CS / ECE / ME / CE</span>
-            <span className="ml-auto hidden sm:inline">press play, lower expectations</span>
+            <span>CS / ECE / ME / CIVIL / ARCH</span>
+            <span className="ml-auto hidden sm:inline">press play · lower deadline anxiety</span>
           </div>
         </section>
 
-        {/* CATEGORIES SECTION */}
-        <section
-          id="categories"
-          className="bg-[hsl(var(--foreground))] px-5 py-16 text-[hsl(var(--background))] sm:px-8 sm:py-24 lg:px-12"
-        >
-          <div className="mx-auto max-w-[1320px]">
-            <div className="grid gap-8 lg:grid-cols-[.75fr_1.25fr] lg:items-end">
-              <div>
-                <SectionKicker dark>choose your current situation</SectionKicker>
-                <h2 className="mt-4 font-display text-5xl font-semibold leading-[.88] tracking-[-.08em] sm:text-7xl">
-                  A song for<br />
-                  <span className="text-[hsl(var(--secondary))]">every submission.</span>
-                </h2>
-              </div>
-              <p className="max-w-[440px] justify-self-end text-base leading-relaxed text-[hsl(var(--background))]/60">
-                Six rooms in the old record store. Tap a category to filter the library, or press the little
-                radio button to queue an entire broadcast.
-              </p>
-            </div>
-            <div className="scrollbar-hide mt-12 flex snap-x gap-3 overflow-x-auto pb-3 sm:grid sm:grid-cols-2 sm:overflow-visible lg:grid-cols-3">
-              {categories.slice(0, 6).map((category) => (
-                <CategoryCard
-                  key={category.id}
-                  category={category}
-                  active={selectedCategory === category.id}
-                  onSelect={() => {
-                    setActiveFilter(
-                      category.id === 'late-night' ? 'late night' : (category.id as Filter)
-                    );
-                    scrollTo('library');
-                  }}
-                  onRadio={() => handleStartCategoryRadio(category.id)}
-                />
-              ))}
-            </div>
-          </div>
-        </section>
+        {/* ========================================================================= */}
+        {/* 2. MOOD EXPERIENCE SECTION ("How are you feeling today?")                 */}
+        {/* ========================================================================= */}
+        <MoodSection allSongs={songs} />
 
-        {/* ESSENTIAL RECORD JUKEBOX */}
-        <section className="mx-auto max-w-[1320px] px-5 py-16 sm:px-8 sm:py-24 lg:px-12">
-          <div className="grid gap-8 lg:grid-cols-[.8fr_1.2fr] lg:items-end">
-            <div>
-              <SectionKicker>the essential record</SectionKicker>
-              <h2 className="mt-4 max-w-[480px] font-display text-5xl font-semibold leading-[.88] tracking-[-.08em] sm:text-7xl">
-                Ultimate<br />
-                <span className="text-[hsl(var(--primary))]">Bollywood</span><br />
-                Jukebox.
-              </h2>
-            </div>
-            <div className="max-w-[540px] justify-self-end">
-              <p className="font-mono-custom text-[10px] uppercase tracking-[.14em] text-[hsl(var(--muted-foreground))]">
-                80s–90s / lovingly overdramatic
-              </p>
-              <p className="mt-4 text-lg leading-relaxed text-[hsl(var(--muted-foreground))]">
-                The songs your parents played in the car, your seniors played in the hostel, and you will
-                suddenly know every word to at 1:40 AM.
-              </p>
-              <button
-                data-testid="button-essential-play"
-                onClick={() => play(songs[0], songs)}
-                className="mt-6 inline-flex items-center rounded-full bg-[hsl(var(--foreground))] px-5 py-3 text-sm font-bold text-[hsl(var(--background))] transition-transform hover:-translate-y-1 cursor-pointer"
-              >
-                <Play size={15} fill="currentColor" className="mr-2" /> Play the essential set
-              </button>
-            </div>
-          </div>
-          <div className="scrollbar-hide mt-10 flex snap-x gap-4 overflow-x-auto pb-3">
-            {songs.slice(0, 6).map((track) => (
-              <button
-                data-testid={`card-essential-${track.id}`}
-                key={track.id}
-                onClick={() => play(track, songs)}
-                className="group min-w-[155px] snap-start text-left sm:min-w-[180px] cursor-pointer"
-              >
-                <Poster track={track} />
-                <span className="mt-3 block truncate text-sm font-bold">{track.title}</span>
-                <span className="mt-1 block truncate text-xs text-[hsl(var(--muted-foreground))]">
-                  {track.movie} · {track.year}
-                </span>
-              </button>
-            ))}
-          </div>
-        </section>
+        {/* ========================================================================= */}
+        {/* 3. FEATURED ROTATIONS & DISCOVERY CHANNELS                                */}
+        {/* ========================================================================= */}
+        <DiscoverySection allSongs={songs} />
 
-        {/* REMEMBER THESE? */}
-        <section className="border-y border-[hsl(var(--foreground))]/10 bg-[#d6b56b]/20 px-5 py-16 sm:px-8 sm:py-20 lg:px-12">
-          <div className="mx-auto max-w-[1320px]">
-            <div className="flex items-end justify-between gap-4">
-              <div>
-                <SectionKicker>remember these?</SectionKicker>
-                <h2 className="mt-4 font-display text-4xl font-semibold tracking-[-.07em] sm:text-6xl">
-                  You heard it once.<br />
-                  <span className="text-[hsl(var(--primary))]">You never forgot.</span>
-                </h2>
-              </div>
-              <button
-                data-testid="button-remember-next"
-                onClick={() => scrollTo('library')}
-                className="hidden items-center gap-1 rounded-full border border-[hsl(var(--foreground))]/20 px-4 py-2 text-xs font-bold sm:flex cursor-pointer"
-              >
-                Open collection <ArrowUpRight size={13} />
-              </button>
-            </div>
-            <div className="scrollbar-hide mt-9 flex snap-x gap-4 overflow-x-auto pb-2">
-              {songs.slice(6, 12).map((track) => (
-                <button
-                  data-testid={`card-remember-${track.id}`}
-                  key={track.id}
-                  onClick={() => play(track, songs)}
-                  className="flex min-w-[260px] snap-start items-center gap-3 rounded-2xl border border-[hsl(var(--foreground))]/15 bg-[hsl(var(--background))]/65 p-2.5 text-left transition-transform hover:-translate-y-1 cursor-pointer"
-                >
-                  <Poster track={track} size="small" />
-                  <span className="min-w-0">
-                    <strong className="block truncate text-sm">{track.title}</strong>
-                    <span className="mt-1 block truncate text-xs text-[hsl(var(--muted-foreground))]">
-                      {track.artist}
-                    </span>
-                    <span className="mt-2 block font-mono-custom text-[9px] uppercase tracking-[.08em] text-[hsl(var(--primary))]">
-                      {track.label}
-                    </span>
-                  </span>
-                  <Play size={15} className="mr-1 shrink-0" />
-                </button>
-              ))}
-            </div>
-          </div>
-        </section>
+        {/* ========================================================================= */}
+        {/* 4. ERAS DISCOVERY (80s, 90s, 2000s, 2010s, 2020s)                         */}
+        {/* ========================================================================= */}
+        <ErasSection allSongs={songs} />
 
-        {/* LIBRARY SECTION */}
-        <section id="library" className="px-5 py-16 sm:px-8 sm:py-24 lg:px-12">
-          <div className="mx-auto max-w-[1320px]">
+        {/* ========================================================================= */}
+        {/* 5. GENRES / LANGUAGES DISCOVERY                                           */}
+        {/* ========================================================================= */}
+        <GenresSection allSongs={songs} />
+
+        {/* ========================================================================= */}
+        {/* 6. CURATED PLAYLISTS EXPERIENCE                                           */}
+        {/* ========================================================================= */}
+        <PlaylistsSection playlists={playlists} allSongs={songs} />
+
+        {/* ========================================================================= */}
+        {/* 7. COMPLETE JUKEBOX LIBRARY & REAL-TIME SEARCH                            */}
+        {/* ========================================================================= */}
+        <section id="library" className="border-t border-[hsl(var(--foreground))]/12 px-5 py-16 sm:px-8 sm:py-24 lg:px-12">
+          <div className="mx-auto max-w-[1360px]">
             <div className="flex flex-col justify-between gap-7 lg:flex-row lg:items-end">
               <div>
-                <SectionKicker>the library / official links only</SectionKicker>
-                <h2 className="mt-4 font-display text-5xl font-semibold leading-[.88] tracking-[-.08em] sm:text-7xl">
-                  Press play.<br />
-                  <span className="text-[hsl(var(--primary))]">Pretend it was easy.</span>
+                <SectionKicker>complete catalogue / official playback fallback</SectionKicker>
+                <h2 className="mt-4 font-display text-4xl font-semibold leading-[.9] tracking-[-.07em] sm:text-6xl lg:text-7xl">
+                  Search & browse<br />
+                  <span className="text-[hsl(var(--primary))]">the full jukebox.</span>
                 </h2>
               </div>
-              <label className="relative flex w-full max-w-[460px]">
+              <label className="relative flex w-full max-w-[480px]">
                 <Search
-                  size={17}
+                  size={18}
                   className="absolute left-4 top-1/2 -translate-y-1/2 text-[hsl(var(--muted-foreground))]"
                 />
                 <input
@@ -409,36 +328,41 @@ export function Home() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   type="search"
-                  placeholder="Search song, artist, movie, year..."
-                  className="h-12 w-full rounded-full border-2 border-[hsl(var(--foreground))]/15 bg-[hsl(var(--card))] pl-11 pr-4 text-sm outline-none transition-colors placeholder:text-[hsl(var(--muted-foreground))] focus:border-[hsl(var(--foreground))]"
+                  placeholder="Search song, artist, film, mood, era, language..."
+                  className="h-12 w-full rounded-full border-2 border-[hsl(var(--foreground))]/20 bg-[hsl(var(--card))] pl-11 pr-4 text-sm outline-none transition-colors placeholder:text-[hsl(var(--muted-foreground))] focus:border-[hsl(var(--foreground))]"
                 />
               </label>
             </div>
+
+            {/* FILTER PILLS */}
             <div className="scrollbar-hide mt-9 flex gap-2 overflow-x-auto pb-2">
               {allFilters.map((filter) => (
                 <button
                   data-testid={`button-filter-${filter.replace(' ', '-')}`}
                   key={filter}
                   onClick={() => setActiveFilter(filter)}
-                  className={`shrink-0 rounded-full px-4 py-2.5 text-xs font-bold capitalize transition-colors cursor-pointer ${
+                  className={`shrink-0 rounded-full px-4 py-2 text-xs font-bold capitalize transition-colors cursor-pointer ${
                     activeFilter === filter
-                      ? 'bg-[hsl(var(--foreground))] text-[hsl(var(--background))]'
-                      : 'border border-[hsl(var(--foreground))]/15 hover:border-[hsl(var(--foreground))]'
+                      ? 'bg-[hsl(var(--foreground))] text-[hsl(var(--background))] shadow-ink'
+                      : 'border border-[hsl(var(--foreground))]/15 hover:border-[hsl(var(--foreground))] bg-[hsl(var(--card))]'
                   }`}
                 >
-                  {filter === 'all' ? 'All tracks' : filter}
+                  {filter === 'all' ? 'All Tracks' : filter}
                 </button>
               ))}
             </div>
-            <div className="mt-7 overflow-hidden rounded-[1.45rem] border border-[hsl(var(--foreground))]/12 bg-[hsl(var(--card))] p-2">
-              <div className="hidden grid-cols-[34px_48px_1fr_125px_auto_auto] gap-4 px-3 pb-2 pt-2 font-mono-custom text-[9px] uppercase tracking-[.15em] text-[hsl(var(--muted-foreground))] sm:grid">
+
+            {/* TRACKS TABLE */}
+            <div className="mt-7 overflow-hidden rounded-[1.6rem] border border-[hsl(var(--foreground))]/15 bg-[hsl(var(--card))] p-3 shadow-soft">
+              <div className="hidden grid-cols-[34px_48px_1fr_135px_auto_auto] gap-4 px-3 pb-3 pt-2 font-mono-custom text-[9px] uppercase tracking-[.15em] text-[hsl(var(--muted-foreground))] sm:grid border-b border-[hsl(var(--foreground))]/10">
                 <span>#</span>
                 <span />
-                <span>Track / film</span>
-                <span>For when...</span>
+                <span>Track / Film</span>
+                <span>Category / Mood</span>
                 <span>Time</span>
                 <span />
               </div>
+
               {filteredTracks.length ? (
                 filteredTracks.map((track, index) => (
                   <TrackRow
@@ -457,12 +381,12 @@ export function Home() {
                   data-testid="empty-library"
                   className="flex flex-col items-center justify-center px-6 py-20 text-center"
                 >
-                  <Search size={28} className="text-[hsl(var(--muted-foreground))]" />
+                  <Search size={32} className="text-[hsl(var(--muted-foreground))]" />
                   <h3 className="mt-4 font-display text-2xl font-semibold">
                     No songs survived that search.
                   </h3>
                   <p className="mt-2 text-sm text-[hsl(var(--muted-foreground))]">
-                    Try the movie name, singer, or a less specific emotional crisis.
+                    Try another mood, movie name, or singer.
                   </p>
                   <button
                     data-testid="button-clear-filters"
@@ -471,44 +395,47 @@ export function Home() {
                       setActiveFilter('all');
                       setMovieFilter('');
                     }}
-                    className="mt-5 rounded-full bg-[hsl(var(--foreground))] px-4 py-2.5 text-xs font-bold text-[hsl(var(--background))] cursor-pointer"
+                    className="mt-5 rounded-full bg-[hsl(var(--foreground))] px-5 py-2.5 text-xs font-bold text-[hsl(var(--background))] cursor-pointer shadow-ink"
                   >
-                    Clear filters
+                    Clear Filters
                   </button>
                 </div>
               )}
             </div>
+
             <div className="mt-4 flex justify-between gap-4 text-xs text-[hsl(var(--muted-foreground))]">
-              <span>{filteredTracks.length} tracks in rotation</span>
+              <span>{filteredTracks.length} tracks matching criteria</span>
               <span className="hidden items-center gap-1 font-mono-custom text-[9px] uppercase tracking-[.1em] sm:flex">
-                YouTube fallback available <ExternalLink size={11} />
+                Official YouTube audio links ready <ExternalLink size={11} />
               </span>
             </div>
           </div>
         </section>
 
-        {/* BROWSE BY FILM */}
+        {/* ========================================================================= */}
+        {/* 8. BROWSE BY FILM CAROUSEL                                                */}
+        {/* ========================================================================= */}
         <section
           id="movies"
           className="border-y border-[hsl(var(--foreground))]/10 bg-[hsl(var(--card))] px-5 py-16 sm:px-8 sm:py-20 lg:px-12"
         >
-          <div className="mx-auto max-w-[1320px]">
+          <div className="mx-auto max-w-[1360px]">
             <div className="flex items-end justify-between">
               <div>
                 <SectionKicker>browse by film</SectionKicker>
                 <h2 className="mt-4 font-display text-4xl font-semibold tracking-[-.07em] sm:text-6xl">
-                  One movie.<br />
+                  One soundtrack.<br />
                   <span className="text-[hsl(var(--primary))]">Many feelings.</span>
                 </h2>
               </div>
               <button
                 data-testid="button-clear-movie"
                 onClick={() => setMovieFilter('')}
-                className={`rounded-full border border-[hsl(var(--foreground))]/15 px-4 py-2 text-xs font-bold cursor-pointer ${
+                className={`rounded-full border border-[hsl(var(--foreground))]/20 px-4 py-2 text-xs font-bold cursor-pointer ${
                   movieFilter ? 'opacity-100' : 'opacity-0 pointer-events-none'
                 }`}
               >
-                All films
+                All Films
               </button>
             </div>
             <div className="scrollbar-hide mt-9 flex gap-3 overflow-x-auto pb-2">
@@ -520,21 +447,21 @@ export function Home() {
                     setMovieFilter(movie);
                     scrollTo('library');
                   }}
-                  className={`min-w-[178px] rounded-[1.1rem] border p-4 text-left transition-transform hover:-translate-y-1 cursor-pointer ${
+                  className={`min-w-[190px] rounded-[1.2rem] border p-4 text-left transition-transform hover:-translate-y-1 cursor-pointer ${
                     movieFilter === movie
-                      ? 'border-[hsl(var(--primary))] bg-[hsl(var(--primary))]/10'
+                      ? 'border-[hsl(var(--primary))] bg-[hsl(var(--primary))]/10 shadow-sm'
                       : 'border-[hsl(var(--foreground))]/15 bg-[hsl(var(--background))]'
                   }`}
                 >
                   <span className="font-mono-custom text-[10px] text-[hsl(var(--muted-foreground))]">
                     FILM 0{index + 1}
                   </span>
-                  <strong className="mt-8 block font-display text-xl font-semibold leading-none">
+                  <strong className="mt-6 block font-display text-xl font-semibold leading-tight">
                     {movie}
                   </strong>
                   <span className="mt-2 block text-xs text-[hsl(var(--muted-foreground))]">
-                    {songs.filter((track) => track.movie === movie).length} track
-                    {songs.filter((track) => track.movie === movie).length > 1 ? 's' : ''}
+                    {songs.filter((track) => (track.movie || track.album) === movie).length} track
+                    {songs.filter((track) => (track.movie || track.album) === movie).length > 1 ? 's' : ''}
                   </span>
                 </button>
               ))}
@@ -542,84 +469,26 @@ export function Home() {
           </div>
         </section>
 
-        {/* SPECIAL PROGRAMMING PLAYLISTS */}
-        <section className="mx-auto max-w-[1320px] px-5 py-16 sm:px-8 sm:py-24 lg:px-12">
-          <div className="flex items-end justify-between">
-            <div>
-              <SectionKicker>special programming</SectionKicker>
-              <h2 className="mt-4 font-display text-4xl font-semibold tracking-[-.07em] sm:text-6xl">
-                No skip button<br />
-                <span className="text-[hsl(var(--primary))]">necessary.</span>
-              </h2>
-            </div>
-            <button
-              data-testid="button-special-radio"
-              onClick={() => handleStartCategoryRadio()}
-              className="hidden rounded-full border border-[hsl(var(--foreground))]/20 px-4 py-2 text-xs font-bold sm:block cursor-pointer"
-            >
-              <Radio size={13} className="mr-1 inline" /> Tune in live
-            </button>
-          </div>
-          <div className="mt-10 grid gap-4 lg:grid-cols-[1.25fr_.9fr_.9fr]">
-            {playlists.slice(0, 3).map((playlist, index) => (
-              <button
-                data-testid={`button-playlist-${playlist.id}`}
-                key={playlist.id}
-                onClick={() => handleStartPlaylistRadio(playlist.id)}
-                className={`group relative min-h-[230px] overflow-hidden rounded-[1.5rem] border-2 border-[hsl(var(--foreground))]/15 p-5 text-left transition-transform hover:-translate-y-1 cursor-pointer ${
-                  index === 0 ? 'bg-[#6b3942] text-[hsl(var(--background))]' : 'bg-[hsl(var(--card))]'
-                }`}
-              >
-                <div className="relative z-10 flex items-start justify-between">
-                  <span className="font-mono-custom text-[9px] uppercase tracking-[.13em] opacity-65">
-                    {index === 0 ? 'broadcast / live' : `playlist / 0${index}`}
-                  </span>
-                  <span className="rounded-full bg-[hsl(var(--background))]/75 p-2 text-[hsl(var(--foreground))]">
-                    <Play size={14} fill="currentColor" />
-                  </span>
-                </div>
-                <div className="absolute -bottom-16 -right-7 h-56 w-56 rotate-[-12deg] rounded-full border-[27px] border-[hsl(var(--secondary))]/35 transition-transform duration-500 group-hover:rotate-[-4deg] group-hover:scale-105" />
-                <div className="absolute bottom-5 left-5 z-10 max-w-[250px]">
-                  <h3 className="font-display text-2xl font-semibold leading-[.95] tracking-[-.05em]">
-                    {playlist.title}
-                  </h3>
-                  <p className="mt-2 max-w-[220px] text-xs opacity-65">{playlist.description}</p>
-                </div>
-              </button>
-            ))}
-          </div>
-        </section>
+        {/* ========================================================================= */}
+        {/* 9. ABOUT ASSIGNMENT FM SECTION                                            */}
+        {/* ========================================================================= */}
+        <AboutSection />
 
-        {/* ENGINEERING COLLEGE FOLKLORE */}
-        <section className="bg-[hsl(var(--foreground))] px-5 py-16 text-[hsl(var(--background))] sm:px-8 sm:py-20 lg:px-12">
-          <div className="mx-auto grid max-w-[1320px] items-center gap-10 lg:grid-cols-[1fr_auto]">
-            <div>
-              <SectionKicker dark>engineering college folklore</SectionKicker>
-              <h2 className="mt-4 max-w-[720px] font-display text-4xl font-semibold leading-[.9] tracking-[-.07em] sm:text-6xl">
-                The code can wait.<br />
-                <span className="text-[hsl(var(--secondary))]">The chorus cannot.</span>
-              </h2>
-              <p className="mt-6 max-w-[580px] leading-relaxed text-[hsl(var(--background))]/60">
-                For the person who says “bas ek gaana” and emerges with a complete playlist, a new crush,
-                and three tabs of Stack Overflow. Keep the headphones on. The viva is tomorrow.
-              </p>
-            </div>
-            <div className="rotate-[5deg]">
-              <Cassette compact />
-            </div>
-          </div>
-        </section>
-
-        <Footer onNavigate={scrollTo} onFeedback={() => showNotice('Feedback hotline is open in spirit')} />
+        {/* ========================================================================= */}
+        {/* 10. FOOTER                                                                */}
+        {/* ========================================================================= */}
+        <Footer onNavigate={scrollTo} onFeedback={() => showNotice('Hostel feedback line is open in spirit!')} />
       </main>
 
+      {/* FLOATING CASSETTE & EXPANDED PLAYERS */}
       <BottomPlayer />
       <ExpandedPlayer />
 
+      {/* TOAST / STATUS NOTIFICATION BANNER */}
       {notice && (
         <div
           data-testid="status-notification"
-          className="fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-full border-2 border-[hsl(var(--foreground))] bg-[hsl(var(--secondary))] px-5 py-3 text-center text-xs font-bold text-[hsl(var(--foreground))] shadow-[4px_4px_0_hsl(var(--foreground))]"
+          className="fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-full border-2 border-[hsl(var(--foreground))] bg-[hsl(var(--secondary))] px-5 py-2.5 text-center text-xs font-bold text-[hsl(var(--foreground))] shadow-[4px_4px_0_hsl(var(--foreground))] animate-in fade-in slide-in-from-bottom-3 duration-200"
         >
           {notice}
         </div>

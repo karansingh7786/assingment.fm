@@ -8,7 +8,7 @@ searchRouter.get('/', (req: Request, res: Response) => {
   try {
     const q = req.query.q;
     if (typeof q !== 'string' || !q.trim()) {
-      res.status(400).json({ error: 'Search query parameter "q" is required and cannot be empty' });
+      res.json([]);
       return;
     }
     const results = searchService.search(q);

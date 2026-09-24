@@ -2,12 +2,17 @@ import type { Song } from '@assignment-fm/shared';
 import type { PlaybackEventListener, PlaybackEventType, PlaybackProvider } from './PlaybackProvider';
 
 /**
- * Converts a duration string like "4:47" into total seconds (287)
+ * Converts a duration string like "4:47" or seconds number into total seconds (287)
  */
-function parseDuration(durationStr: string): number {
-  const parts = durationStr.split(':').map((p) => parseInt(p, 10));
-  if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
-    return parts[0] * 60 + parts[1];
+function parseDuration(duration?: string | number): number {
+  if (typeof duration === 'number') return duration;
+  if (typeof duration === 'string') {
+    const parts = duration.split(':').map((p) => parseInt(p, 10));
+    if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+      return parts[0] * 60 + parts[1];
+    }
+    const parsed = parseInt(duration, 10);
+    if (!isNaN(parsed)) return parsed;
   }
   return 180; // default 3 minutes fallback
 }
