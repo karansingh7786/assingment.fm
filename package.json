@@ -2,28 +2,20 @@
   "name": "assignment-fm",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "workspaces": [
-    "shared",
-    "server",
-    "client"
+    "backend",
+    "frontend"
   ],
   "scripts": {
-    "dev": "concurrently -k -p \"[{name}]\" -n \"SERVER,CLIENT\" -c \"blue,magenta\" \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
-    "dev:server": "npm run dev --prefix server",
-    "dev:client": "npm run dev --prefix client",
-    "build": "npm run build --prefix shared && npm run build --prefix server && npm run build --prefix client",
-    "start": "npm run start --prefix server",
-    "typecheck": "npm run typecheck --prefix shared && npm run typecheck --prefix server && npm run typecheck --prefix client",
-    "test": "tsx --test tests/youtube.test.ts"
+    "dev": "concurrently -k -p \"[{name}]\" -n \"BACKEND,FRONTEND\" -c \"blue,magenta\" \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
+    "dev:backend": "npm run dev --prefix backend",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "build": "npm run build --prefix frontend",
+    "start": "npm run start --prefix backend",
+    "test": "node --test tests/*.test.js"
   },
   "devDependencies": {
-    "concurrently": "^9.1.2",
-    "typescript": "^5.7.3"
-  },
-  "dependencies": {
-    "@types/babel__traverse": "^7.28.0",
-    "@types/d3-scale": "^4.0.9",
-    "@types/estree": "^1.0.9",
-    "mime-db": "^1.54.0"
+    "concurrently": "^9.1.2"
   }
 }
