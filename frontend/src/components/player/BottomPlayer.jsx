@@ -92,11 +92,11 @@ export function BottomPlayer() {
         </button>
 
         {/* CONTROLS */}
-        <div className="flex items-center gap-1 sm:gap-2">
+        <div className="flex items-center gap-2 sm:gap-3">
           <button
             data-testid="button-previous-track"
             onClick={previous}
-            className="rounded-full p-2.5 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] cursor-pointer transition-colors"
+            className="rounded-full p-3 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] cursor-pointer transition-colors"
             aria-label="Previous track"
           >
             <SkipBack size={17} fill="currentColor" />
@@ -104,15 +104,15 @@ export function BottomPlayer() {
           <button
             data-testid="button-toggle-player"
             onClick={togglePlayPause}
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-[hsl(var(--foreground))] text-[hsl(var(--background))] transition-transform hover:scale-105 shadow-ink cursor-pointer"
+            className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-[hsl(var(--foreground))] text-[hsl(var(--background))] transition-transform hover:scale-105 shadow-ink cursor-pointer"
             aria-label={isPlaying ? 'Pause' : 'Play'}
           >
-            {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}
+            {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" className="ml-0.5" />}
           </button>
           <button
             data-testid="button-next-track"
             onClick={next}
-            className="rounded-full p-2.5 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] cursor-pointer transition-colors"
+            className="rounded-full p-3 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] cursor-pointer transition-colors"
             aria-label="Next track"
           >
             <SkipForward size={17} fill="currentColor" />
